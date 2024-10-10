@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("Началось добавление пользователя методом POST");
 
         // проверяем выполнение необходимых условий
@@ -33,13 +35,14 @@ public class UserController {
 
         // сохраняем нового пользователя в памяти приложения
         users.put(user.getId(), user);
+
         log.info("Закончилось добавление пользователя {}", user);
         return user;
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
-        log.info("Началось обновлени пользователя методом PUT");
+    public User update(@Valid @RequestBody User user) {
+        log.info("Началось обновление пользователя методом PUT");
 
         // проверяем необходимые условия
         Long id = user.getId();
@@ -47,6 +50,7 @@ public class UserController {
 
         // если пользователь найден и все условия соблюдены, обновляем его
         users.put(id, user);
+
         log.info("Закончилось обновление пользователя {}", user);
         return user;
     }
@@ -62,16 +66,19 @@ public class UserController {
 
     private void prepareCreation(User user) {
         String email = user.getEmail();
-        if (email == null || email.isBlank() || !email.contains("@")) {
-            log.error("Получено пустое или некорректное значение email = {}", email);
+        if (email == null || email.isBlank()) {
+            log.error("Получено пустое значение email = {}", email);
             throw new ValidationException("email должен быть указан при добавлении пользователя");
         }
+
         String login = user.getLogin();
         if (login == null || login.trim().isBlank()) {
             log.error("Получено пустое значение login");
             throw new ValidationException("login должен быть указан при добавлении пользователя");
         }
+
         validateBirthday(user.getBirthday());
+
         if (user.getName() == null || user.getName().trim().isBlank()) {
             log.warn("Получено пустое значение name при добавлении пользователя, поэтому name = login: {}", login);
             user.setName(login);
@@ -89,7 +96,7 @@ public class UserController {
             log.error("По указанному для обновления ID пользователя {} нет сохраненной информации", id);
             throw new ValidationException("По указанному идентификтору пользователь для обновления не найден");
         }
-        if (oldUser.getId() != id) {
+        if (!oldUser.getId().equals(id)) {
             log.error("По указанному идентификатору пользователя {} найден пользователь с другим ID={}", id, oldUser.getId());
             throw new ValidationException("По указанному идентификтору найден пользователь с другим ид.");
         }
@@ -98,9 +105,6 @@ public class UserController {
         if (email == null || email.trim().isBlank()) {
             log.warn("Не получен или указан пустой email пользователя при обновлении: email не изменяется");
             user.setEmail(oldUser.getEmail());
-        } else if (!email.contains("@")) {
-            log.error("Получено некорректное значение email = {}", email);
-            throw new ValidationException("email должен пользователя должен содержать знак @");
         }
 
         String login = user.getLogin();
@@ -120,7 +124,8 @@ public class UserController {
 
     private void validateBirthday(LocalDate birthday) {
         if (birthday != null && birthday.isAfter(LocalDate.now())) {
-            log.error("Получено значение birthday из будущего = {}", birthday);
+            log.error("Получено значение birthday из будущего = {}",
+                    birthday.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
             throw new ValidationException("birthday не должен быть больше текущей даты");
         }
     }
