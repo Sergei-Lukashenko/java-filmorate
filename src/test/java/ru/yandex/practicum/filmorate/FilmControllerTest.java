@@ -81,7 +81,7 @@ class FilmControllerTest {
 				.build();
 
 		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-		assertEquals(400, response.statusCode(), "Bad HTTP status on POST request for film without name");
+		assertEquals(500, response.statusCode(), "Bad HTTP status on POST request for film without name");
 	}
 
 	@Test

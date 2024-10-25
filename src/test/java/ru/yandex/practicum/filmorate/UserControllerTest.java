@@ -50,6 +50,7 @@ class UserControllerTest {
         final User user = new User();
         user.setEmail("s@ru");
         user.setLogin("serg");
+        user.setBirthday(LocalDate.of(1975, 01, 27));
 
         String userJson = gson.toJson(user);
 
@@ -87,6 +88,7 @@ class UserControllerTest {
         final User user = new User();
         user.setEmail("s2@ru");
         user.setLogin("serg2");
+        user.setBirthday(LocalDate.of(1975, 01, 27));
 
         String userJson = gson.toJson(user);
 

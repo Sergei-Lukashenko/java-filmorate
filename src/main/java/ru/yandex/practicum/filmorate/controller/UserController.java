@@ -1,132 +1,80 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/users")
 @Slf4j
+@RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        log.info("Методом GET запрошен список пользователей");
+        return userService.findAll();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Началось добавление пользователя методом POST");
-
-        // проверяем выполнение необходимых условий
-        prepareCreation(user);
-
-        // формируем ID
-        user.setId(getNextId());
-
-        // сохраняем нового пользователя в памяти приложения
-        users.put(user.getId(), user);
-
-        log.info("Закончилось добавление пользователя {}", user);
-        return user;
+        final User newUser = userService.create(user);
+        log.info("Закончилось добавление пользователя {}", newUser);
+        return newUser;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        log.info("Началось обновление пользователя методом PUT");
-
-        // проверяем необходимые условия
-        Long id = user.getId();
-        prepareUpdate(id, user);
-
-        // если пользователь найден и все условия соблюдены, обновляем его
-        users.put(id, user);
-
-        log.info("Закончилось обновление пользователя {}", user);
-        return user;
+        log.info("Началось обновление пользователя c ID = {} методом PUT", user.getId());
+        final User updatedUser = userService.update(user);
+        log.info("Закончилось обновление пользователя {}", updatedUser);
+        return updatedUser;
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @DeleteMapping("/{id}")
+    public User delete(@PathVariable Long id) {
+        log.info("Поступил запрос на удаление пользователя с ID = {} методом DELETE", id);
+        final User deletedUser = userService.delete(id);
+        log.info("Закончилось удаление пользователя {}", deletedUser);
+        return deletedUser;
     }
 
-    private void prepareCreation(User user) {
-        String email = user.getEmail();
-        if (email == null || email.isBlank()) {
-            log.error("Получено пустое значение email = {}", email);
-            throw new ValidationException("email должен быть указан при добавлении пользователя");
-        }
-
-        String login = user.getLogin();
-        if (login == null || login.trim().isBlank()) {
-            log.error("Получено пустое значение login");
-            throw new ValidationException("login должен быть указан при добавлении пользователя");
-        }
-
-        validateBirthday(user.getBirthday());
-
-        if (user.getName() == null || user.getName().trim().isBlank()) {
-            log.warn("Получено пустое значение name при добавлении пользователя, поэтому name = login: {}", login);
-            user.setName(login);
-        }
+    @GetMapping("/{id}/friends")
+    public Collection<User> findAllFriends(@PathVariable Long id) {
+        log.info("Методом GET запрошен список всех друзей пользователя с ID = {}", id);
+        return userService.findAllFriends(id);
     }
 
-    private void prepareUpdate(Long id, User user) {
-        if (id == null) {
-            log.error("Получен пустой идентификатор пользователя при обновлении");
-            throw new ValidationException("Идентификтор пользователя не может быть пустым для команды обновления");
-        }
-
-        User oldUser = users.get(id);
-        if (oldUser == null) {
-            log.error("По указанному для обновления ID пользователя {} нет сохраненной информации", id);
-            throw new ValidationException("По указанному идентификтору пользователь для обновления не найден");
-        }
-        if (!oldUser.getId().equals(id)) {
-            log.error("По указанному идентификатору пользователя {} найден пользователь с другим ID={}", id, oldUser.getId());
-            throw new ValidationException("По указанному идентификтору найден пользователь с другим ид.");
-        }
-
-        String email = user.getEmail();
-        if (email == null || email.trim().isBlank()) {
-            log.warn("Не получен или указан пустой email пользователя при обновлении: email не изменяется");
-            user.setEmail(oldUser.getEmail());
-        }
-
-        String login = user.getLogin();
-        if (login == null || login.trim().isBlank()) {
-            log.warn("Не получен или указан пустой login пользователя при обновлении: login не изменяется");
-            user.setLogin(oldUser.getLogin());
-        }
-
-        String name = user.getName();
-        if (name == null || name.trim().isBlank()) {
-            log.warn("Не получено или указано пустое имя пользователя при обновлении: name не изменяется");
-            user.setName(oldUser.getName());
-        }
-
-        validateBirthday(user.getBirthday());
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> findCommonFriends(@PathVariable Long id,
+                                              @PathVariable Long otherId) {
+        log.info("Методом GET запрошен список общих друзей пользователей с ID = {} и {}",
+                id, otherId);
+        return userService.findCommonFriends(id, otherId);
     }
 
-    private void validateBirthday(LocalDate birthday) {
-        if (birthday != null && birthday.isAfter(LocalDate.now())) {
-            log.error("Получено значение birthday из будущего = {}",
-                    birthday.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-            throw new ValidationException("birthday не должен быть больше текущей даты");
-        }
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id,
+                          @PathVariable Long friendId) {
+        log.info("Началось обновление пользователя c ID = {} методом PUT для добавления ему друга c ID = {}",
+                id, friendId);
+        userService.addFriend(id, friendId);
+        log.info("Закончилось добавление пользователю ID = {} друга ID = {}", id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable Long id,
+                             @PathVariable Long friendId) {
+        log.info("Началось удаление друга ID = {} у пользователя c ID = {} методом DELETE",
+                 friendId, id);
+        userService.deleteFriend(id, friendId);
+        log.info("Закончилось удаление друга ID = {} у пользователя c ID = {}", friendId, id);
     }
 }
