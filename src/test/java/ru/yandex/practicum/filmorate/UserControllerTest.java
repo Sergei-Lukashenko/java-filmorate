@@ -80,7 +80,7 @@ class UserControllerTest {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(500, response.statusCode(), "Bad HTTP status on POST request for user without login");
+        assertEquals(400, response.statusCode(), "Bad HTTP status on POST request for user without login");
     }
 
     @Test
