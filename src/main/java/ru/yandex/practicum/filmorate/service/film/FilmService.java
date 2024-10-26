@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -33,6 +34,10 @@ public class FilmService {
     }
 
     public Collection<Film> findPopular(Integer count) {
+        if (count < 1) {
+            log.error("Получено некорректне значение количества популярных фильмов: {}", count);
+            throw new ValidationException("Количество полпулярных фильмов должно быть положительным");
+        }
         return filmStorage.findPopular(count);
     }
 
