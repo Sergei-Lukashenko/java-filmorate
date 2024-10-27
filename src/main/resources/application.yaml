@@ -1,0 +1,8 @@
+spring:
+  main:
+    log-startup-info: true # логирование деталей старта разрешено
+    banner-mode: off       # не выводим баннер
+
+logging.level:
+  ru.yandex.practicum.filmorate: TRACE
+  org.zalando.logbook: TRACE
