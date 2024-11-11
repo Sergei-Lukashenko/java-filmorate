@@ -34,10 +34,6 @@ public class FilmService {
     }
 
     public Collection<Film> findPopular(Integer count) {
-        if (count < 1) {
-            log.error("Получено некорректне значение количества популярных фильмов: {}", count);
-            throw new ValidationException("Количество полпулярных фильмов должно быть положительным");
-        }
         return filmStorage.findPopular(count);
     }
 
