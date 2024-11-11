@@ -1,6 +1,6 @@
 # java-filmorate
 Template repository for Filmorate project.
-![Диаграмма таблицы проекта]("Схема БД filmorate.png")
+![Диаграмма таблицы проекта](/"Схема БД filmorate.png")
 
 ##### _Запрос на получение списка всех пользователей:_
 ```sql
