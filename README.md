@@ -1,6 +1,6 @@
 # java-filmorate
 Template repository for Filmorate project.
-![Диаграмма таблицы проекта]([/"Схема БД filmorate.png"](https://github.com/Sergei-Lukashenko/java-filmorate/blob/add-review/Схема%20БД%20filmorate.png))
+![Диаграмма таблицы проекта](/"Схема БД filmorate.png")
 
 ##### _Запрос на получение списка всех пользователей:_
 ```sql
