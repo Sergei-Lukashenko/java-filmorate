@@ -24,10 +24,10 @@ JOIN
    GROUP BY film_id
    ORDER BY likes_count DESC
    LIMIT (10)) AS t ON f.film_id = t.film_id
-ORDER BY t.likes_count
+ORDER BY t.likes_count;
 ```
 #####  Запрос на получение общих друзей для пользователей с идентификаторами 1 и 2
-```
+```sql
 SELECT *
 FROM users
 WHERE user_id IN
