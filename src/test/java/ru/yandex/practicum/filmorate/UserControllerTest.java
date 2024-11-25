@@ -5,8 +5,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.utils.UserRowMapper;
 import ru.yandex.practicum.filmorate.utils.LocalDateAdapter;
 
 import java.io.IOException;
@@ -19,6 +24,9 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@JdbcTest
+@AutoConfigureTestDatabase
+@Import({UserDbStorage.class, UserRowMapper.class})
 class UserControllerTest {
     private static final ConfigurableApplicationContext run = SpringApplication.run(FilmorateApplication.class);
     private static Gson gson;
@@ -46,9 +54,9 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserFriendsWithNegativeUserId() throws IOException, InterruptedException {
+    void getUserFriendsWithNonexistentUserId() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
-        URI uri = URI.create("http://localhost:8080/users/-1/friends");
+        URI uri = URI.create("http://localhost:8080/users/-76545897/friends");
         HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));

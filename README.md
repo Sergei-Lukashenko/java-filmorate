@@ -16,10 +16,24 @@ FROM films;
 ##### _Запрос на получение топ 10 наиболее популярных фильмов_
 ```sql
 SELECT *
-FROM films
-WHERE film_id IN (SELECT film_id, count(user_id) AS likes_count
-                  FROM film_likes
-                  GROUP BY film_id
-                  ORDER BY likes_count DESC
-                  LIMIT (10));
+FROM films AS f
+JOIN
+  (SELECT film_id,
+          count(user_id) AS likes_count
+   FROM film_likes
+   GROUP BY film_id
+   ORDER BY likes_count DESC
+   LIMIT (10)) AS t ON f.film_id = t.film_id
+ORDER BY t.likes_count
+```
+#####  Запрос на получение общих друзей для пользователей с идентификаторами 1 и 2
+```
+SELECT *
+FROM users
+WHERE user_id IN
+    (SELECT friend_id
+     FROM user_friends
+     WHERE user_id = -1 INTERSECT
+       SELECT friend_id
+       FROM user_friends WHERE user_id = -2);
 ```

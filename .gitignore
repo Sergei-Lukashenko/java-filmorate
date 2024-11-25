@@ -45,6 +45,9 @@ build/
 *.db
 db/*
 
+# NOT ignore H2 autonomous DB
+db/filmorate.mv.db
+
 ### Mac OS and other OS generated files ###
 .DS_Store
 
