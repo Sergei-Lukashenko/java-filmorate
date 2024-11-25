@@ -113,7 +113,7 @@ public class FilmDbStorage implements FilmStorage {
         // если фильм найден и все условия соблюдены, обновляем его и возвращаем обновленный объект film
         final Mpa mpa = film.getMpa();
         final int rowsCount = jdbc.update(UPDATE_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), (mpa == null ? null: mpa.getId()), id);
+                film.getDuration(), (mpa == null ? null : mpa.getId()), id);
         if (rowsCount == 0) {
             log.error("Не найден фильм с ID = {} при update в БД", id);
             throw new NotFoundException("Не удалось обновить фильм в БД.");

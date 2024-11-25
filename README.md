@@ -33,7 +33,7 @@ FROM users
 WHERE user_id IN
     (SELECT friend_id
      FROM user_friends
-     WHERE user_id = -1 INTERSECT
+     WHERE user_id = 1 INTERSECT
        SELECT friend_id
-       FROM user_friends WHERE user_id = -2);
+       FROM user_friends WHERE user_id = 2);
 ```
