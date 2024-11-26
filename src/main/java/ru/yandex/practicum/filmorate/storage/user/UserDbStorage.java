@@ -32,11 +32,11 @@ public class UserDbStorage implements UserStorage {
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     private static final String FIND_FRIENDS_QUERY = "SELECT * FROM users WHERE user_id IN " +
-            "(SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0)";
+            "(SELECT friend_id FROM user_friends WHERE user_id = ?)";
 
     private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT * FROM users WHERE user_id IN " +
             "(SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0 INTERSECT " +
-            "SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0)";
+            "SELECT friend_id FROM user_friends WHERE user_id = ?)";
 
     private static final String DELETE_FRIEND_QUERY = "DELETE FROM user_friends WHERE user_id = ? AND friend_id = ?";
 
