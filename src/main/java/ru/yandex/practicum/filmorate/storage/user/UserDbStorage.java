@@ -32,11 +32,11 @@ public class UserDbStorage implements UserStorage {
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     private static final String FIND_FRIENDS_QUERY = "SELECT * FROM users WHERE user_id IN " +
-            "(SELECT friend_id FROM user_friends WHERE user_id = ?)";
+            "(SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0)";
 
     private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT * FROM users WHERE user_id IN " +
-            "(SELECT friend_id FROM user_friends WHERE user_id = ? INTERSECT " +
-            "SELECT friend_id FROM user_friends WHERE user_id = ?)";
+            "(SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0 INTERSECT " +
+            "SELECT friend_id FROM user_friends WHERE user_id = ? AND status <> 0)";
 
     private static final String DELETE_FRIEND_QUERY = "DELETE FROM user_friends WHERE user_id = ? AND friend_id = ?";
 
@@ -64,7 +64,7 @@ public class UserDbStorage implements UserStorage {
         final Long id = user.getId();
 
         // проверяем необходимые условия
-        User oldUser = findOne(id);
+        User oldUser = findOneById(id);
         UserValidations.prepareUpdate(id, user, oldUser);
 
         // если пользователь найден и все условия соблюдены, обновляем его и возвращаем обновленный объект user
@@ -79,30 +79,30 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User delete(Long id) {
-        final User oldUser = findOne(id);
+        final User oldUser = findOneById(id);
         UserValidations.validateOneUserNotNull(oldUser, id);
         return jdbc.update(DELETE_USER_QUERY, id) > 0 ? oldUser : null;
     }
 
     @Override
     public Collection<User> findAllFriends(Long id) {
-        final User user = findOne(id);
+        final User user = findOneById(id);
         UserValidations.validateOneUserNotNull(user, id);
         return jdbc.query(FIND_FRIENDS_QUERY,  mapper, id);
     }
 
     @Override
     public Collection<User> findCommonFriends(Long id, Long otherId) {
-        final User user = findOne(id);
-        final User otherUser = findOne(otherId);
+        final User user = findOneById(id);
+        final User otherUser = findOneById(otherId);
         UserValidations.validateTwoUsersNotNull(user, otherUser, id, otherId);
         return jdbc.query(FIND_COMMON_FRIENDS_QUERY,  mapper, id, otherId);
     }
 
     @Override
     public void addFriend(Long id, Long friendId) {
-        final User user = findOne(id);
-        final User friendUser = findOne(friendId);
+        final User user = findOneById(id);
+        final User friendUser = findOneById(friendId);
         UserValidations.validateTwoUsersNotNull(user, friendUser, id, friendId);
 
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbc).withTableName("user_friends");
@@ -114,15 +114,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User deleteFriend(Long id, Long friendId) {
-        final User user = findOne(id);
-        final User friendUser = findOne(friendId);
+        final User user = findOneById(id);
+        final User friendUser = findOneById(friendId);
         UserValidations.validateTwoUsersNotNull(user, friendUser, id, friendId);
         return jdbc.update(DELETE_FRIEND_QUERY, id, friendId) > 0 ? friendUser : null;
     }
 
     @Override
     public boolean exists(Long id) {
-        final User user = findOne(id);
+        final User user = findOneById(id);
         UserValidations.validateOneUserNotNull(user, id);
         return true;
     }
@@ -144,10 +144,9 @@ public class UserDbStorage implements UserStorage {
         return values;
     }
 
-    private User findOne(long id) {
+    private User findOneById(long id) {
         try {
-            User user = (User) jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
-            return user;
+            return jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
         } catch (EmptyResultDataAccessException ignored) {
             return null;
         }

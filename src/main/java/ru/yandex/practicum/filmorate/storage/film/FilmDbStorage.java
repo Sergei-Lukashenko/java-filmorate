@@ -28,9 +28,21 @@ public class FilmDbStorage implements FilmStorage {
 
     private final GenreDbStorage genreDbStorage;
 
-    private static final String FIND_ALL_QUERY = "SELECT * FROM films ORDER BY film_id";
+    private static final String FIND_ALL_QUERY =
+            """
+            SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                   md.mpa_id, md.name AS mpa_name
+            FROM films AS f
+            LEFT JOIN mpa_dict AS md ON f.mpa_rating = md.mpa_id
+            ORDER BY f.film_id""";
 
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE film_id = ?";
+    private static final String FIND_BY_ID_QUERY =
+            """
+            SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                   md.mpa_id, md.name AS mpa_name
+            FROM films AS f
+            LEFT JOIN mpa_dict AS md ON f.mpa_rating = md.mpa_id
+            WHERE f.film_id = ?""";
 
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, " +
             "duration = ?, mpa_rating = ? WHERE film_id = ?";
@@ -39,14 +51,17 @@ public class FilmDbStorage implements FilmStorage {
 
     private static final String FIND_POPULAR =
             """
-            SELECT * FROM films AS f
+            SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                   md.mpa_id, md.name AS mpa_name
+            FROM films AS f
             JOIN
                 (SELECT film_id,
-                 count(user_id) AS likes_count
-                FROM film_likes
-                GROUP BY film_id
-                ORDER BY likes_count DESC
-                LIMIT (?)) AS t ON f.film_id = t.film_id
+                        count(user_id) AS likes_count
+                 FROM film_likes
+                 GROUP BY film_id
+                 ORDER BY likes_count DESC
+                 LIMIT (?)) AS t ON f.film_id = t.film_id
+            LEFT JOIN mpa_dict AS md ON f.mpa_rating = md.mpa_id
             ORDER BY t.likes_count DESC""";
 
     private static final String DELETE_LIKE_QUERY = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
@@ -64,8 +79,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film findOneById(Long id) {
         try {
-            Film film = (Film) jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
-            return film;
+            return jdbc.queryForObject(FIND_BY_ID_QUERY, mapper, id);
         } catch (EmptyResultDataAccessException ignored) {
             return null;
         }
@@ -93,9 +107,8 @@ public class FilmDbStorage implements FilmStorage {
             simpleJdbcInsert = new SimpleJdbcInsert(jdbc).withTableName("film_genres");
             try {
                 simpleJdbcInsert.execute(toFilmGenresMap(id, genre.getId()));
-            }  catch (DuplicateKeyException exception) {
+            }  catch (DuplicateKeyException ignored) {
                 log.warn("Комбинация film_id = {} и genre_id = {} уже есть в БД!", id, genre.getId());
-                //throw new ValidationException("Идентификтор фильма не может быть пустым для команды обновления", exception);
             }
         }
 
@@ -157,7 +170,7 @@ public class FilmDbStorage implements FilmStorage {
         values.put("duration", film.getDuration());
         Mpa mpa = film.getMpa();
         if (mpa != null) {
-            values.put("mpa_rating", film.getMpa().getId());
+            values.put("mpa_rating", mpa.getId());
         }
         return values;
     }

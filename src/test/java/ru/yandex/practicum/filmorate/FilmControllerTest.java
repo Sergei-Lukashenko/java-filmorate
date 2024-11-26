@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.service.film.MpaService;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.utils.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.genre.utils.GenreRowMapper;
+import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaRowMapper;
 import ru.yandex.practicum.filmorate.utils.LocalDateAdapter;
 
 import java.io.IOException;
@@ -30,7 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDbStorage.class, MpaService.class, GenreRowMapper.class, GenreDbStorage.class, FilmRowMapper.class})
+@Import({FilmDbStorage.class, MpaService.class, MpaRowMapper.class, MpaDbStorage.class,
+		GenreRowMapper.class, GenreDbStorage.class, FilmRowMapper.class})
 class FilmControllerTest {
 	private static final ConfigurableApplicationContext run = SpringApplication.run(FilmorateApplication.class);
 	private static Gson gson;

@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.film.utils;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.film.MpaService;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.sql.ResultSet;
@@ -15,16 +15,13 @@ import java.util.List;
 
 
 @Component
+@RequiredArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
-    @Autowired
-    private MpaService mpaService;
-
-    @Autowired
-    private GenreStorage genreStorage;
+    private final GenreStorage genreStorage;
 
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Film film = new Film();
+        final Film film = new Film();
         final Long filmId = resultSet.getLong("film_id");
         film.setId(filmId);
         film.setName(resultSet.getString("name"));
@@ -35,9 +32,10 @@ public class FilmRowMapper implements RowMapper<Film> {
 
         film.setDuration(resultSet.getInt("duration"));
 
-        Integer mpaId = resultSet.getInt("mpa_rating");
+        final int mpaId = resultSet.getInt("mpa_id");
         if (mpaId > 0) {
-            film.setMpa(mpaService.findById(mpaId));
+            final String mpaName = resultSet.getString("mpa_name");
+            film.setMpa(new Mpa(mpaId, mpaName));
         }
 
         List<Genre> genres = genreStorage.getFilmGenres(filmId);
