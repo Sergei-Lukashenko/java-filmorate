@@ -5,9 +5,19 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.film.MpaService;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.utils.FilmRowMapper;
+import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaRowMapper;
 import ru.yandex.practicum.filmorate.utils.LocalDateAdapter;
 
 import java.io.IOException;
@@ -20,6 +30,10 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@JdbcTest
+@AutoConfigureTestDatabase
+@Import({FilmDbStorage.class, MpaService.class, MpaRowMapper.class, MpaDbStorage.class,
+		GenreRowMapper.class, GenreDbStorage.class, FilmRowMapper.class})
 class FilmControllerTest {
 	private static final ConfigurableApplicationContext run = SpringApplication.run(FilmorateApplication.class);
 	private static Gson gson;
