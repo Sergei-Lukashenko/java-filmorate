@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
     email varchar(100) NOT NULL,
     login varchar(100) NOT NULL,
     name varchar(100),
-    birthday date,
+    birthday date CHECK (birthday <= CURRENT_DATE),
     CONSTRAINT users_pk PRIMARY KEY (user_id)
 );
 
